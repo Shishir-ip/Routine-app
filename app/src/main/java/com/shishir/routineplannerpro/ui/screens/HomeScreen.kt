@@ -1,4 +1,3 @@
-
 package com.shishir.routineplannerpro.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
@@ -55,23 +54,27 @@ fun HomeScreen(navController: NavController, viewModel: RoutineViewModel = viewM
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-            // Calendar Date Selector (Visual Placeholder)
             Text("Date: ${selectedDate.format(DateTimeFormatter.ISO_DATE)}", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Routines Tabs
-            ScrollableTabRow(selectedTabIndex = routines.indexOfFirst { it.id == selectedRoutineId }.coerceAtLeast(0)) {
-                routines.forEach { routine ->
-                    Tab(
-                        selected = selectedRoutineId == routine.id,
-                        onClick = { selectedRoutineId = routine.id },
-                        text = { Text(routine.name) }
-                    )
+            // FIX: Only show TabRow if there are routines to prevent IndexOutOfBounds crash
+            if (routines.isNotEmpty()) {
+                val selectedIndex = routines.indexOfFirst { it.id == selectedRoutineId }.coerceAtLeast(0)
+                ScrollableTabRow(selectedTabIndex = selectedIndex, edgePadding = 0.dp) {
+                    routines.forEachIndexed { index, routine ->
+                        Tab(
+                            selected = selectedIndex == index,
+                            onClick = { selectedRoutineId = routine.id },
+                            text = { Text(routine.name) }
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                Text("No routines yet. Add one from settings or AI!", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            Spacer(modifier = Modifier.height(16.dp))
 
-            // Activities List (Unified View logic)
             val filteredActivities = activities.filter { 
                 selectedRoutineId == null || it.routineId == selectedRoutineId 
             }
@@ -102,7 +105,6 @@ fun ActivityCard(activity: Activity, routineName: String?) {
                 Text(text = "From: $routineName", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
             
-            // Expand with nice animation
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
                     Text("Days: ${activity.daysOfWeek}", style = MaterialTheme.typography.bodySmall)

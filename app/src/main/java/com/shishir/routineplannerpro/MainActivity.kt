@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestPermissions()
+        requestPermissionsSafely()
         setContent {
             RoutinePlannerProTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -33,22 +33,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestPermissions() {
+    private fun requestPermissionsSafely() {
         val permissions = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = Uri.parse("package:$packageName")
-                }
-                startActivity(intent)
-            }
-        }
+        
         if (permissions.isNotEmpty()) {
             requestPermissionLauncher.launch(permissions.toTypedArray())
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    if (intent.resolveActivity(packageManager) != null) {
+                        startActivity(intent)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace() 
+            }
         }
     }
 }
