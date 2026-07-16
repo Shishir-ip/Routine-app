@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required to create releases and upload assets
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,7 +22,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      # This downloads Gradle directly, bypassing the need for 'gradlew'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
