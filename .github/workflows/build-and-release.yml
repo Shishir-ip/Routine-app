@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   release:
-    types: [published]  # <--- THIS IS THE FIX
+    types: [published]
+  workflow_dispatch: # <--- THIS ADDS THE MANUAL "RUN" BUTTON
 
 jobs:
   build:
@@ -32,8 +35,8 @@ jobs:
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'release'
         with:
+          tag_name: v1.0  # <--- Forces the APK into your existing v1.0 release
           files: app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
